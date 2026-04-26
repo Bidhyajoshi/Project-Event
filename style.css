@@ -27,28 +27,52 @@ body {
     align-items: center;
 }
 
-/* Starfield Background */
+/* Celestium Void Background */
 #starfield {
     position: fixed;
+    top: -5%;
+    left: -5%;
+    width: 110%;
+    height: 110%;
+    z-index: -1;
+    background: url('celestium-void.png') no-repeat center center;
+    background-size: cover;
+    animation: pulseNebula 15s infinite alternate ease-in-out;
+}
+
+/* Overlay gradient for text pop */
+#starfield::after {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1;
-    background: radial-gradient(circle at center, #111 0%, #050505 100%);
+    background: radial-gradient(circle at center, rgba(5,5,5,0.3) 0%, rgba(5,5,5,0.8) 100%);
+    z-index: 1;
+    pointer-events: none;
 }
 
-.star {
+@keyframes pulseNebula {
+    0% { transform: scale(1) rotate(0deg); filter: brightness(0.9) hue-rotate(0deg); }
+    50% { transform: scale(1.02) rotate(0.5deg); filter: brightness(1.1) hue-rotate(5deg); }
+    100% { transform: scale(1.04) rotate(-0.5deg); filter: brightness(1) hue-rotate(-5deg); }
+}
+
+/* Gold Dust Particles */
+.gold-dust {
     position: absolute;
-    background: white;
+    background: #FFD700;
     border-radius: 50%;
-    opacity: 0.5;
-    animation: twinkle var(--duration) infinite ease-in-out;
+    opacity: 0.6;
+    animation: floatDust var(--duration) infinite ease-in-out;
+    z-index: 2;
+    box-shadow: 0 0 8px #FFD700;
 }
 
-@keyframes twinkle {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.2); }
+@keyframes floatDust {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+    50% { transform: translate(var(--dx), var(--dy)) scale(1.5); opacity: 0.9; }
 }
 
 /* Custom Cursor */

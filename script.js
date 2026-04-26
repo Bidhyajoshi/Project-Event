@@ -13,27 +13,31 @@ document.addEventListener('DOMContentLoaded', () => {
         resetIdleTimer();
     });
 
-    // 2. Generate Starfield
-    function createStars() {
-        const starCount = 150;
-        for (let i = 0; i < starCount; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
+    // 2. Generate Gold Dust
+    function createGoldDust() {
+        const dustCount = 80;
+        for (let i = 0; i < dustCount; i++) {
+            const dust = document.createElement('div');
+            dust.className = 'gold-dust';
             const x = Math.random() * 100;
             const y = Math.random() * 100;
             const size = Math.random() * 2 + 1;
-            const duration = Math.random() * 3 + 2;
+            const duration = Math.random() * 5 + 4;
+            const dx = (Math.random() - 0.5) * 30;
+            const dy = (Math.random() - 0.5) * 30;
             
-            star.style.left = `${x}%`;
-            star.style.top = `${y}%`;
-            star.style.width = `${size}px`;
-            star.style.height = `${size}px`;
-            star.style.setProperty('--duration', `${duration}s`);
+            dust.style.left = `${x}%`;
+            dust.style.top = `${y}%`;
+            dust.style.width = `${size}px`;
+            dust.style.height = `${size}px`;
+            dust.style.setProperty('--duration', `${duration}s`);
+            dust.style.setProperty('--dx', `${dx}px`);
+            dust.style.setProperty('--dy', `${dy}px`);
             
-            starfield.appendChild(star);
+            starfield.appendChild(dust);
         }
     }
-    createStars();
+    createGoldDust();
 
     // 3. Load Feature Function
     window.loadFeature = (featureName) => {
