@@ -99,6 +99,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize idle timer
     resetIdleTimer();
 
+    // 5. Self Destruct
+    window.selfDestruct = () => {
+        document.body.style.transition = 'filter 1s ease';
+        document.body.style.filter = 'brightness(5) blur(20px)';
+        setTimeout(() => {
+            window.location.href = 'logout.php';
+        }, 1000);
+    };
+
+    // 6. Gate Notification Check
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('msg') && urlParams.get('msg') === 'self-destructed') {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Session Nuked',
+                text: 'Your presence has been erased.',
+                background: '#050505',
+                color: '#ff4b2b',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+    }
+
     // Interaction feedback for nav items
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
