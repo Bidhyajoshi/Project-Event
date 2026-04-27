@@ -1,153 +1,67 @@
 <?php
 session_start();
-$pdo = require 'db.php';
-$isLoggedIn = isset($_SESSION['user_id']);
-if ($isLoggedIn) {
-    updateActivity($pdo);
+if (isset($_SESSION['user_id'])) {
+    header("Location: dashboard.php");
+    exit;
 }
-
-// Get user count
-$stmt = $pdo->query("SELECT COUNT(*) FROM users");
-$userCount = $stmt->fetchColumn() ?: rand(42, 420);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANTI-GRAVITY | Production</title>
+    <title>BAWAAL | The Student Playground</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .top-nav { position: absolute; top: 20px; right: 30px; z-index: 100; display: flex; gap: 15px; }
+        .top-nav a { text-decoration: none; font-size: 1.2rem; padding: 10px 20px; border-radius: 20px; color: #fff; font-weight: bold; border: 2px solid transparent; transition: 0.3s; }
+        .top-nav a.login-btn { border-color: #00ffff; text-shadow: 0 0 5px #00ffff; box-shadow: 0 0 10px rgba(0,255,255,0.2); }
+        .top-nav a.login-btn:hover { background: #00ffff; color: #000; box-shadow: 0 0 20px #00ffff; text-shadow: none; }
+        .top-nav a.reg-btn { background: #ff00ff; box-shadow: 0 0 15px rgba(255,0,255,0.5); }
+        .top-nav a.reg-btn:hover { background: #fff; color: #ff00ff; box-shadow: 0 0 30px #ff00ff; }
+        
+        .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 10; padding: 20px; }
+        .welcome-text { font-size: 2rem; color: #00ffff; letter-spacing: 5px; margin-bottom: -10px; text-shadow: 0 0 10px #00ffff; }
+        .about-text { max-width: 600px; font-size: 1.5rem; margin: 30px auto; color: #e0c3fc; text-shadow: 1px 1px 0 #000; line-height: 1.5; }
+        
+        .locked-dashboard { position: relative; padding: 50px 20px; text-align: center; }
+        .locked-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 20; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .lock-icon { font-size: 5rem; margin-bottom: 20px; animation: float 3s infinite ease-in-out; }
+        .lock-text { font-size: 2.5rem; color: #fff; text-shadow: 0 0 15px #ff00ff; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+    </style>
 </head>
 <body>
     <div class="bg-gradient" id="bgGradient"></div>
     <div id="floatingEmojis"></div>
+    
+    <nav class="top-nav">
+        <a href="login.php" class="login-btn">Login</a>
+        <a href="register.php" class="reg-btn">Join Chaos</a>
+    </nav>
 
-    <div class="live-counter">🟢 <?php echo $userCount + rand(1, 10); ?> Legends Bunking Now</div>
-
-    <!-- ONBOARDING FLOW -->
-    <?php if (!$isLoggedIn): ?>
-    <div class="onboarding-overlay" id="onboardOverlay">
-        <div class="glass-card onboard-step active" id="step1">
-            <h1>Enter your Earth Name</h1>
-            <input type="text" id="earthName" class="glass-input" placeholder="Name here...">
-            <button class="glow-btn" onclick="nextStep(2)">Next ➔</button>
-        </div>
-        <div class="glass-card onboard-step" id="step2">
-            <h1>Select your Avatar</h1>
-            <div class="avatar-grid">
-                <div class="avatar-card" onclick="selectAvatar('🤓')">🤓 Topper</div>
-                <div class="avatar-card" onclick="selectAvatar('😎')">😎 Backbencher</div>
-                <div class="avatar-card" onclick="selectAvatar('👻')">👻 Ghost</div>
-            </div>
-        </div>
-        <div class="glass-card onboard-step" id="step3">
-            <h1>Choose your Struggle</h1>
-            <button class="glow-btn struggle-btn" onclick="finishOnboard(1)">Year 1 (Clueless)</button>
-            <button class="glow-btn struggle-btn" onclick="finishOnboard(2)">Year 2 (Depressed)</button>
-            <button class="glow-btn struggle-btn" onclick="finishOnboard(3)">Year 3 (Dead Inside)</button>
-            <button class="glow-btn struggle-btn" onclick="finishOnboard(4)">Year 4 (Let me out)</button>
-        </div>
-    </div>
-    <?php endif; ?>
-
-    <!-- MAIN DASHBOARD -->
-    <div class="dashboard">
-        <header class="text-center">
-            <h1 class="main-title">ANTI-GRAVITY</h1>
-            <p class="subtitle">The Ultimate Interactive Playground</p>
-        </header>
-
-        <div class="grid">
-            <div class="glass-card tool" onclick="openPortal('ome-portal')">
-                <div class="icon">🌐</div>
-                <h2>Ome-Gravity</h2>
-            </div>
-            <div class="glass-card tool" onclick="openPortal('ai-portal')">
-                <div class="icon">🤖</div>
-                <h2>Savage AI</h2>
-            </div>
-            <div class="glass-card tool" onclick="openPortal('bunk-portal')">
-                <div class="icon">🎲</div>
-                <h2>Bunk Decision</h2>
-            </div>
-            <div class="glass-card tool" onclick="openPortal('excuse-portal')">
-                <div class="icon">🤥</div>
-                <h2>Excuse Generator</h2>
-            </div>
-            <div class="glass-card tool" onclick="openPortal('overthink-portal')">
-                <div class="icon">🧠</div>
-                <h2>Overthinker 3000</h2>
-            </div>
-        </div>
+    <div class="hero">
+        <div class="welcome-text">WELCOME TO</div>
+        <h1 class="bawaal-glitch" data-text="BAWAAL" style="font-size: 8rem;">BAWAAL</h1>
+        <p class="about-text">The ultimate digital playground for students. Create excuses, decide your bunks, and talk to strangers—all in one place.</p>
+        <a href="register.php" class="arcade-btn" style="padding: 20px 40px; text-decoration:none; margin-top:20px; display:inline-block; font-size:2rem;">ENTER THE CHAOS</a>
     </div>
 
-    <!-- PORTALS -->
-    <section class="portal" id="ome-portal">
-        <button class="close-btn" onclick="closePortal('ome-portal')">Back to Reality</button>
-        <div class="portal-content">
-            <h1>Ome-Gravity</h1>
-            <div class="video-grid">
-                <video id="myVid" autoplay muted playsinline class="glass-vid"></video>
-                <div class="glass-vid placeholder-vid">Connecting to Stranger...</div>
-            </div>
+    <div class="locked-dashboard">
+        <div class="locked-overlay">
+            <div class="lock-icon">🔒</div>
+            <h2 class="lock-text">Login to unlock the chaos!</h2>
         </div>
-    </section>
-
-    <section class="portal" id="ai-portal">
-        <button class="close-btn" onclick="closePortal('ai-portal')">Back to Reality</button>
-        <div class="portal-content">
-            <h1>Savage AI</h1>
-            <div class="chat-ui">
-                <div id="aiChatBox" class="chat-box glass-card"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="aiInput" class="glass-input" placeholder="Crush? Exams? Money?">
-                    <button class="glow-btn" onclick="sendAIMsg()">Send</button>
-                </div>
-            </div>
+        <div class="grid" style="opacity: 0.5; filter: grayscale(50%); pointer-events: none;">
+            <div class="glass-card tool"><div class="icon">🌐</div><h2>Ome-Gravity</h2></div>
+            <div class="glass-card tool"><div class="icon">🤖</div><h2>Savage AI</h2></div>
+            <div class="glass-card tool"><div class="icon">🎲</div><h2>Bunk Decision</h2></div>
+            <div class="glass-card tool"><div class="icon">🤥</div><h2>Excuse Generator</h2></div>
+            <div class="glass-card tool"><div class="icon">🧠</div><h2>Overthinker 3000</h2></div>
         </div>
-    </section>
-
-    <section class="portal" id="bunk-portal">
-        <button class="close-btn" onclick="closePortal('bunk-portal')">Back to Reality</button>
-        <div class="portal-content">
-            <h1>Spin the Wheel</h1>
-            <div class="flex-row">
-                <input type="number" id="bAtt" class="glass-input mini" placeholder="Attendance %">
-                <input type="number" id="bFr" class="glass-input mini" placeholder="Friends Count">
-            </div>
-            <div class="wheel-box">
-                <div class="wheel-pointer">▼</div>
-                <div class="wheel" id="bWheel"></div>
-            </div>
-            <button class="glow-btn" onclick="spinWheel()">SPIN TO DECIDE</button>
-            <h2 id="wheelResult" class="result-text"></h2>
-        </div>
-    </section>
-
-    <section class="portal" id="excuse-portal">
-        <button class="close-btn" onclick="closePortal('excuse-portal')">Back to Reality</button>
-        <div class="portal-content">
-            <h1>Excuse Generator</h1>
-            <div class="excuse-cols">
-                <select id="exCat" class="glass-input select"><option value="College">College</option><option value="Date">Date</option></select>
-                <select id="exVic" class="glass-input select"><option value="Professor">Professor</option><option value="Partner">Partner</option></select>
-                <button class="glow-btn" onclick="brewExcuse()">Brew Lie</button>
-            </div>
-            <h2 id="exResult" class="result-text glass-card" style="display:none; margin-top:20px;"></h2>
-        </div>
-    </section>
-
-    <section class="portal" id="overthink-portal">
-        <button class="close-btn" onclick="closePortal('overthink-portal')">Back to Reality</button>
-        <div class="portal-content" id="otContainer">
-            <h1>Overthinker 3000</h1>
-            <input type="text" id="otInput" class="glass-input" placeholder="What did they say?">
-            <button class="glow-btn" onclick="startOverthink()">Start Panic</button>
-            <div id="otList" class="ot-list"></div>
-        </div>
-    </section>
-
+    </div>
+    
     <script src="script.js"></script>
 </body>
 </html>
