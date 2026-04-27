@@ -4,138 +4,123 @@ document.addEventListener('DOMContentLoaded', () => {
     const gravityWell = document.getElementById('gravity-well');
     let idleTimer;
 
-    // 1. Custom Cursor Movement
+    // 1. Custom Cursor Movement (Smoother & Bouncier)
     document.addEventListener('mousemove', (e) => {
         cursor.style.left = e.clientX + 'px';
         cursor.style.top = e.clientY + 'px';
-        
-        // Reset idle timer on movement
         resetIdleTimer();
     });
 
-    // 2. Generate Gold Dust
-    function createGoldDust() {
-        const dustCount = 80;
-        for (let i = 0; i < dustCount; i++) {
-            const dust = document.createElement('div');
-            dust.className = 'gold-dust';
-            const x = Math.random() * 100;
-            const y = Math.random() * 100;
-            const size = Math.random() * 2 + 1;
-            const duration = Math.random() * 5 + 4;
-            const dx = (Math.random() - 0.5) * 30;
-            const dy = (Math.random() - 0.5) * 30;
+    // 2. Space-Rave Background with Floating Chaos
+    function createChaos() {
+        const elements = ['🤡', '📈', '🗑️', '👑', '💸', '🧠', '💀', '👽', '🍆', '✨'];
+        const count = 30;
+        
+        for (let i = 0; i < count; i++) {
+            const el = document.createElement('div');
+            el.className = 'floating-element';
+            el.innerText = elements[Math.floor(Math.random() * elements.length)];
             
-            dust.style.left = `${x}%`;
-            dust.style.top = `${y}%`;
-            dust.style.width = `${size}px`;
-            dust.style.height = `${size}px`;
-            dust.style.setProperty('--duration', `${duration}s`);
-            dust.style.setProperty('--dx', `${dx}px`);
-            dust.style.setProperty('--dy', `${dy}px`);
+            const startX = Math.random() * 100;
+            const startY = Math.random() * 100;
+            const duration = 10 + Math.random() * 20;
             
-            starfield.appendChild(dust);
+            el.style.left = `${startX}%`;
+            el.style.top = `${startY}%`;
+            el.style.setProperty('--duration', `${duration}s`);
+            el.style.fontSize = `${1 + Math.random() * 2}rem`;
+            
+            starfield.appendChild(el);
         }
     }
-    createGoldDust();
+    createChaos();
 
-    // 3. Load Feature Function
+    // 3. Load Feature Function (Chaotic Edition)
     window.loadFeature = (featureName) => {
         const features = {
             'bunk': {
-                title: 'Bunk Probability 🎲',
-                content: 'Current chance of success: <span style="color: var(--electric-cyan);">85%</span>. Professor looks sleepy.',
+                title: 'BUNK OR DIE 🎲',
+                content: 'Probability: <span style="color: var(--electric-cyan);">HIGH</span>. The professor is literally reading from a PDF.',
                 accent: 'var(--electric-cyan)'
             },
             'excuses': {
-                title: 'Excuse Generator 🤥',
-                content: '"My cat accidentally submitted a DMCA takedown against my homework."',
-                accent: '#FFD700'
+                title: 'LIAR LIAR 🤥',
+                content: '"My internet had a stroke and died during the submission."',
+                accent: 'var(--electric-pink)'
             },
             'overthink': {
-                title: 'Overthink Tank 🧠',
-                content: 'Processing 1.2 million scenarios for why they said "K" instead of "Okay".',
-                accent: 'var(--neon-violet)'
+                title: 'BRAIN ROT 🧠',
+                content: 'Overthinking why they didn\'t like your story. (It\'s because you\'re weird).',
+                accent: 'var(--neon-purple)'
             },
             'chat': {
-                title: 'Shadow Chat 💬',
-                content: 'Connecting to the underground college network... [Encrypted]',
+                title: 'DARK WEB 💬',
+                content: 'Talking to people you\'ll ignore in the hallway tomorrow.',
                 accent: '#00FF41'
             }
         };
 
         const data = features[featureName];
+        if (!gravityWell) return;
 
-        // Fade out
         gravityWell.classList.add('fade-out');
 
         setTimeout(() => {
             gravityWell.innerHTML = `
-                <div class="glass-card" style="border-color: ${data.accent}">
-                    <h2 style="color: ${data.accent}; margin-bottom: 1rem;">${data.title}</h2>
+                <div class="glass-bubble" style="border-color: ${data.accent}; border-radius: 30px;">
+                    <h2 class="neon-text-pink" style="color: ${data.accent}; margin-bottom: 1rem;">${data.title}</h2>
                     <p style="opacity: 0.9; line-height: 1.6; font-size: 1.1rem;">${data.content}</p>
-                    <button onclick="location.reload()" style="margin-top: 1.5rem; background: transparent; border: 1px solid ${data.accent}; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-family: inherit;">Reset Gravity</button>
+                    <button onclick="location.reload()" class="btn-chaos" style="padding: 10px 20px; font-size: 0.9rem; background: ${data.accent}; color: black;">RESET REALITY</button>
                 </div>
             `;
-            // Fade in
             gravityWell.classList.remove('fade-out');
             gravityWell.classList.add('fade-in');
             
             setTimeout(() => {
                 gravityWell.classList.remove('fade-in');
-            }, 400);
-        }, 400);
+            }, 500);
+        }, 500);
     };
 
-    // 4. Idle Shake Effect
+    // 4. Idle Gravity Shift (More Extreme)
     function resetIdleTimer() {
         document.body.classList.remove('shifting-gravity');
         clearTimeout(idleTimer);
         idleTimer = setTimeout(() => {
             document.body.classList.add('shifting-gravity');
-        }, 5000); // Trigger after 5 seconds of idle
+        }, 8000);
     }
-
-    // Initialize idle timer
     resetIdleTimer();
 
-    // 5. Self Destruct
+    // 5. Self Destruct (Nuke)
     window.selfDestruct = () => {
-        document.body.style.transition = 'filter 1s ease';
-        document.body.style.filter = 'brightness(5) blur(20px)';
+        if (typeof confetti !== 'undefined') {
+            confetti({
+                particleCount: 150,
+                spread: 180,
+                colors: ['#ff0000', '#000000', '#ffffff']
+            });
+        }
+        document.body.style.transition = 'all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+        document.body.style.transform = 'scale(0) rotate(720deg)';
+        document.body.style.filter = 'invert(1) blur(10px)';
         setTimeout(() => {
             window.location.href = 'logout.php';
         }, 1000);
     };
 
-    // 6. Gate Notification Check
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('msg') && urlParams.get('msg') === 'self-destructed') {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Session Nuked',
-                text: 'Your presence has been erased.',
-                background: '#050505',
-                color: '#ff4b2b',
-                timer: 3000,
-                showConfirmButton: false
-            });
-        }
-    }
-
-    // Interaction feedback for nav items
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
+    // Custom hover effects for anything clickable
+    const clickables = document.querySelectorAll('.nav-item, .btn-chaos, .character-card, .toggle-link');
+    clickables.forEach(item => {
         item.addEventListener('mouseenter', () => {
-            cursor.style.transform = 'scale(2.5)';
-            cursor.style.borderColor = 'var(--neon-violet)';
-            cursor.style.boxShadow = '0 0 25px var(--neon-violet)';
+            cursor.style.transform = 'scale(3)';
+            cursor.style.borderColor = 'var(--neon-purple)';
+            cursor.style.background = 'rgba(191, 0, 255, 0.2)';
         });
         item.addEventListener('mouseleave', () => {
             cursor.style.transform = 'scale(1)';
-            cursor.style.borderColor = 'var(--electric-cyan)';
-            cursor.style.boxShadow = '0 0 15px var(--electric-cyan)';
+            cursor.style.borderColor = 'var(--electric-pink)';
+            cursor.style.background = 'transparent';
         });
     });
 });

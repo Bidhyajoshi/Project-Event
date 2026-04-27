@@ -20,6 +20,7 @@ try {
         avatar_type VARCHAR(50) NOT NULL,
         year VARCHAR(20) NOT NULL,
         streak INT DEFAULT 0,
+        last_activity DATETIME DEFAULT CURRENT_TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB;";
     $pdo->exec($tableSql);
@@ -28,6 +29,14 @@ try {
     die("Connection failed: " . $e->getMessage());
 }
 
-// Return the PDO instance for use in other files
+// Function to update user activity
+function updateActivity($pdo) {
+    if (isset($_SESSION['user_id'])) {
+        $stmt = $pdo->prepare("UPDATE users SET last_activity = NOW() WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+    }
+}
+
+// Return the PDO instance
 return $pdo;
 ?>
