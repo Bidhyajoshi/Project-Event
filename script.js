@@ -1,126 +1,132 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const cursor = document.getElementById('custom-cursor');
-    const starfield = document.getElementById('starfield');
-    const gravityWell = document.getElementById('gravity-well');
-    let idleTimer;
-
-    // 1. Custom Cursor Movement (Smoother & Bouncier)
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
-        resetIdleTimer();
-    });
-
-    // 2. Space-Rave Background with Floating Chaos
-    function createChaos() {
-        const elements = ['🤡', '📈', '🗑️', '👑', '💸', '🧠', '💀', '👽', '🍆', '✨'];
-        const count = 30;
-        
-        for (let i = 0; i < count; i++) {
-            const el = document.createElement('div');
-            el.className = 'floating-element';
-            el.innerText = elements[Math.floor(Math.random() * elements.length)];
-            
-            const startX = Math.random() * 100;
-            const startY = Math.random() * 100;
-            const duration = 10 + Math.random() * 20;
-            
-            el.style.left = `${startX}%`;
-            el.style.top = `${startY}%`;
-            el.style.setProperty('--duration', `${duration}s`);
-            el.style.fontSize = `${1 + Math.random() * 2}rem`;
-            
-            starfield.appendChild(el);
+    // Floating Emojis
+    const emojis = ['🍕', '☕', '🎮', '💀', '🤡', '💸', '🧠', '🚀', '🔥', '🤓'];
+    const container = document.getElementById('floatingEmojis');
+    if (container) {
+        for(let i=0; i<10; i++) {
+            let el = document.createElement('div');
+            el.className = 'f-emoji';
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.left = Math.random() * 90 + 'vw';
+            el.style.animationDuration = (10 + Math.random() * 15) + 's';
+            el.style.animationDelay = (Math.random() * 5) + 's';
+            container.appendChild(el);
         }
     }
-    createChaos();
-
-    // 3. Load Feature Function (Chaotic Edition)
-    window.loadFeature = (featureName) => {
-        const features = {
-            'bunk': {
-                title: 'BUNK OR DIE 🎲',
-                content: 'Probability: <span style="color: var(--electric-cyan);">HIGH</span>. The professor is literally reading from a PDF.',
-                accent: 'var(--electric-cyan)'
-            },
-            'excuses': {
-                title: 'LIAR LIAR 🤥',
-                content: '"My internet had a stroke and died during the submission."',
-                accent: 'var(--electric-pink)'
-            },
-            'overthink': {
-                title: 'BRAIN ROT 🧠',
-                content: 'Overthinking why they didn\'t like your story. (It\'s because you\'re weird).',
-                accent: 'var(--neon-purple)'
-            },
-            'chat': {
-                title: 'DARK WEB 💬',
-                content: 'Talking to people you\'ll ignore in the hallway tomorrow.',
-                accent: '#00FF41'
-            }
-        };
-
-        const data = features[featureName];
-        if (!gravityWell) return;
-
-        gravityWell.classList.add('fade-out');
-
-        setTimeout(() => {
-            gravityWell.innerHTML = `
-                <div class="glass-bubble" style="border-color: ${data.accent}; border-radius: 30px;">
-                    <h2 class="neon-text-pink" style="color: ${data.accent}; margin-bottom: 1rem;">${data.title}</h2>
-                    <p style="opacity: 0.9; line-height: 1.6; font-size: 1.1rem;">${data.content}</p>
-                    <button onclick="location.reload()" class="btn-chaos" style="padding: 10px 20px; font-size: 0.9rem; background: ${data.accent}; color: black;">RESET REALITY</button>
-                </div>
-            `;
-            gravityWell.classList.remove('fade-out');
-            gravityWell.classList.add('fade-in');
-            
-            setTimeout(() => {
-                gravityWell.classList.remove('fade-in');
-            }, 500);
-        }, 500);
-    };
-
-    // 4. Idle Gravity Shift (More Extreme)
-    function resetIdleTimer() {
-        document.body.classList.remove('shifting-gravity');
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(() => {
-            document.body.classList.add('shifting-gravity');
-        }, 8000);
-    }
-    resetIdleTimer();
-
-    // 5. Self Destruct (Nuke)
-    window.selfDestruct = () => {
-        if (typeof confetti !== 'undefined') {
-            confetti({
-                particleCount: 150,
-                spread: 180,
-                colors: ['#ff0000', '#000000', '#ffffff']
-            });
-        }
-        document.body.style.transition = 'all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-        document.body.style.transform = 'scale(0) rotate(720deg)';
-        document.body.style.filter = 'invert(1) blur(10px)';
-        setTimeout(() => {
-            window.location.href = 'logout.php';
-        }, 1000);
-    };
-
-    // Custom hover effects for anything clickable
-    const clickables = document.querySelectorAll('.nav-item, .btn-chaos, .character-card, .toggle-link');
-    clickables.forEach(item => {
-        item.addEventListener('mouseenter', () => {
-            cursor.style.transform = 'scale(3)';
-            cursor.style.borderColor = 'var(--neon-purple)';
-            cursor.style.background = 'rgba(191, 0, 255, 0.2)';
-        });
-        item.addEventListener('mouseleave', () => {
-            cursor.style.transform = 'scale(1)';
-            cursor.style.borderColor = 'var(--electric-pink)';
-            cursor.style.background = 'transparent';
-        });
-    });
 });
+
+// Auth Flow
+let userAvatar = '';
+window.nextStep = (step) => {
+    const name = document.getElementById('earthName').value;
+    if(step === 2 && !name) { alert("Enter a name!"); return; }
+    document.querySelectorAll('.onboard-step').forEach(e => e.classList.remove('active'));
+    document.getElementById('step' + step).classList.add('active');
+};
+window.selectAvatar = (avatar) => {
+    userAvatar = avatar;
+    nextStep(3);
+};
+window.finishOnboard = (year) => {
+    document.getElementById('onboardOverlay').style.display = 'none';
+    // Optionally trigger AJAX to register in db here
+};
+
+// Portals
+window.openPortal = (id) => {
+    const p = document.getElementById(id);
+    p.style.display = 'flex';
+    setTimeout(() => p.classList.add('active'), 50);
+    if(id === 'ome-portal') startCam();
+};
+window.closePortal = (id) => {
+    const p = document.getElementById(id);
+    p.classList.remove('active');
+    setTimeout(() => { p.style.display = 'none'; }, 400);
+    if(id === 'overthink-portal') resetOT();
+};
+
+// Bunk Wheel
+window.spinWheel = () => {
+    const wheel = document.getElementById('bWheel');
+    const res = document.getElementById('wheelResult');
+    const att = parseInt(document.getElementById('bAtt').value)||0;
+    
+    const spins = 5 + Math.random() * 5;
+    const deg = Math.random() * 360;
+    wheel.style.transform = `rotate(${spins*360 + deg}deg)`;
+    res.innerText = "Spinning...";
+    res.style.color = "#fff";
+
+    setTimeout(() => {
+        if(att < 75) { res.innerText = "DANGER! GO TO CLASS!"; res.style.color = "#ff4d4d"; }
+        else { res.innerText = "BUNK IT LIKE A BOSS!"; res.style.color = "#32CD32"; }
+    }, 3000);
+};
+
+// Savage AI
+window.sendAIMsg = () => {
+    const box = document.getElementById('aiChatBox');
+    const input = document.getElementById('aiInput');
+    const val = input.value;
+    if(!val) return;
+
+    box.innerHTML += `<div class="msg user">${val}</div>`;
+    input.value = '';
+
+    let reply = "Skill issue.";
+    if(val.toLowerCase().includes('crush')) reply = "They left you on read 3 years ago.";
+    if(val.toLowerCase().includes('exam')) reply = "Start packing for the Himalayas.";
+    if(val.toLowerCase().includes('money')) reply = "Your wallet is a black hole.";
+
+    setTimeout(() => {
+        box.innerHTML += `<div class="msg ai">${reply}</div>`;
+        box.scrollTop = box.scrollHeight;
+    }, 500);
+};
+
+// Excuse Gen
+window.brewExcuse = () => {
+    const cat = document.getElementById('exCat').value;
+    const vic = document.getElementById('exVic').value;
+    const res = document.getElementById('exResult');
+    
+    const base = cat === 'College' ? "my internet exploded" : "my pet ate my clothes";
+    res.innerText = `I can't face the ${vic} because ${base}.`;
+    res.style.display = 'block';
+    res.style.color = '#00E5FF';
+};
+
+// Overthinker
+let otTimer;
+window.startOverthink = () => {
+    const list = document.getElementById('otList');
+    const cont = document.getElementById('otContainer');
+    list.innerHTML = '';
+    let count = 1;
+    clearInterval(otTimer);
+
+    function loop() {
+        if(count > 10) return;
+        list.innerHTML += `<div class="ot-item">${count}. Everyone noticed and they hate you.</div>`;
+        document.body.style.transform = `scale(${1 + (count*0.02)})`;
+        cont.style.animation = `shakeOT ${0.5/count}s infinite`;
+        count++;
+        otTimer = setTimeout(loop, 1200);
+    }
+    loop();
+};
+function resetOT() {
+    clearInterval(otTimer);
+    document.body.style.transform = 'scale(1)';
+    document.getElementById('otContainer').style.animation = '';
+}
+
+// Camera
+function startCam() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({video:true}).then(s => {
+            document.getElementById('myVid').srcObject = s;
+        }).catch(e => console.log("Camera failed"));
+    }
+}
