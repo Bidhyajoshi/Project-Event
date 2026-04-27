@@ -10,7 +10,7 @@ try {
     
     // Create database if it doesn't exist
     $pdo->exec("CREATE DATABASE IF NOT EXISTS `$dbname` COLLATE utf8mb4_unicode_ci");
-    $pdo->exec("USE `$dbname` text-align: center;");
+    $pdo->exec("USE `$dbname`;");
 
     // Create users table
     $tableSql = "CREATE TABLE IF NOT EXISTS users (
