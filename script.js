@@ -16,19 +16,39 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Auth Flow
-let userAvatar = '';
+let userIdentity = '';
+let userTool = '';
+
 window.nextStep = (step) => {
     const name = document.getElementById('earthName').value;
-    if(step === 2 && !name) { alert("Enter a name!"); return; }
+    if(step === 2 && !name) { alert("Enter your Earth Name first!"); return; }
     document.querySelectorAll('.onboard-step').forEach(e => e.classList.remove('active'));
     document.getElementById('step' + step).classList.add('active');
 };
-window.selectAvatar = (avatar) => {
-    userAvatar = avatar;
-    nextStep(3);
+
+window.selectIdentity = (emoji, name, el) => {
+    userIdentity = name;
+    // Clear previous selection
+    el.parentElement.querySelectorAll('.onboard-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('nextToStep3').style.display = 'block';
 };
-window.finishOnboard = (year) => {
+
+window.selectTool = (emoji, name, el) => {
+    userTool = name;
+    // Clear previous selection
+    el.parentElement.querySelectorAll('.onboard-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('finishBtn').style.display = 'block';
+};
+
+window.finishOnboard = () => {
     document.getElementById('onboardOverlay').style.display = 'none';
+<<<<<<< HEAD
+=======
+    // Trigger celebratory toast or animation
+    console.log(`Registered: ${userIdentity} with ${userTool}`);
+>>>>>>> 236e0aa (changes made)
 };
 
 // Portals
@@ -306,6 +326,7 @@ window.sendAIMsg = () => {
     }).catch(e => console.error(e));
 };
 
+<<<<<<< HEAD
 function scrollToBottomAI() {
     const box = document.getElementById('aiChatBox');
     box.scrollTop = box.scrollHeight;
@@ -365,29 +386,231 @@ window.brewExcuse = () => {
     res.innerText = `I can't face the ${vic} because ${base}.`;
     res.style.display = 'block';
     res.style.color = '#00E5FF';
+=======
+// Excuse Generator
+const excusesPool = [
+    // Level 1: Chill
+    { level: 1, text: "I was helping an old lady cross the road, but she was actually going in the wrong direction so I had to take her back." },
+    { level: 1, text: "My alarm clock decided to join a local strike and didn't ring." },
+    { level: 1, text: "I accidentally joined a marathon and couldn't stop until the finish line." },
+    { level: 1, text: "I was stuck in a very intense rock-paper-scissors match with a toddler." },
+    { level: 1, text: "I forgot how to walk for 15 minutes." },
+    { level: 1, text: "My cat sat on my laptop and I didn't want to disturb his royal slumber." },
+    { level: 1, text: "I was researching 'how to be on time' and lost track of time." },
+    { level: 1, text: "A squirrel was looking at me judgmentally and I had to resolve the conflict." },
+    { level: 1, text: "I thought it was Sunday... for the third time this week." },
+    { level: 1, text: "I was busy defending my sandwich from a very aggressive pigeon." },
+    
+    // Level 2: Annoyed
+    { level: 2, text: "My Wi-Fi developed a consciousness and refused to load educational content." },
+    { level: 2, text: "I got stuck in a rotating door for an hour." },
+    { level: 2, text: "My roommate locked me in the balcony 'as a prank'." },
+    { level: 2, text: "I accidentally put my phone in the fridge and couldn't find it to check the time." },
+    { level: 2, text: "A cloud followed me the whole way and it was very distracting." },
+    { level: 2, text: "I was trying to calculate the trajectory of a falling leaf." },
+    { level: 2, text: "My socks didn't match and I had to hold a crisis meeting with myself." },
+    { level: 2, text: "I got distracted by a 'Buy 1 Get 1' sale on items I don't even need." },
+    { level: 2, text: "I was convinced I was in a simulation and was looking for the exit." },
+    { level: 2, text: "My coffee was too hot, so I had to wait for it to reach exactly 54.3 degrees." },
+
+    // Level 3: Strict
+    { level: 3, text: "My laptop started speaking in Spanish and then died a tragic death." },
+    { level: 3, text: "I was questioning the meaning of the syllabus and entered a deep meditative state." },
+    { level: 3, text: "My goldfish has a fever and required a very small cold compress." },
+    { level: 3, text: "I was kidnapped by a group of mimes and couldn't call for help." },
+    { level: 3, text: "My textbook was stolen by a magpie with academic ambitions." },
+    { level: 3, text: "I developed a temporary allergy to the sound of your voice (no offense)." },
+    { level: 3, text: "A localized gravity anomaly kept me pinned to my bed." },
+    { level: 3, text: "I was participating in a secret underground underground society meeting." },
+    { level: 3, text: "My brain hit 100% capacity and had to reboot in safe mode." },
+    { level: 3, text: "I found a glitch in the matrix and spent the morning reporting it to the devs." },
+
+    // Level 4: Final Boss
+    { level: 4, text: "A monkey stole my backpack and is currently negotiating for 40 bananas." },
+    { level: 4, text: "I was drafted into a localized intergalactic war that only lasted 2 hours." },
+    { level: 4, text: "My house was declared an independent sovereign state and I had to apply for a visa to leave." },
+    { level: 4, text: "I accidentally swapped bodies with my neighbor's husky." },
+    { level: 4, text: "The ghost of a 17th-century pirate was using my laptop to write his memoirs." },
+    { level: 4, text: "I was chased by a flock of angry geese who claimed I owed them money." },
+    { level: 4, text: "My car was recruited for a movie stunt and I wasn't allowed to leave." },
+    { level: 4, text: "I found a secret door in my closet that leads to Narnia, but there was a queue." },
+    { level: 4, text: "A group of ninjas challenged me to a duel and I couldn't say no." },
+    { level: 4, text: "I was busy preventing a temporal rift in the kitchen." },
+
+    // Level 5: Dean Level
+    { level: 5, text: "I have been chosen as the temporary leader of a small island nation and was busy with my inauguration." },
+    { level: 5, text: "The laws of physics were suspended in my zip code for the morning." },
+    { level: 5, text: "I was involved in a top-secret government operation involving a missing rubber duck." },
+    { level: 5, text: "I accidentally invented a time machine and spent 'tomorrow' in the year 3026." },
+    { level: 5, text: "The President called me for advice on his Minecraft server." },
+    { level: 5, text: "I was temporarily abducted by aliens but they returned me because I wouldn't stop overthinking." },
+    { level: 5, text: "I discovered a new color and had to name it before it disappeared." },
+    { level: 5, text: "I was in a parallel universe where this class doesn't exist yet." },
+    { level: 5, text: "My dog actually did the assignment, but then he submitted it to a different university." },
+    { level: 5, text: "I am currently a ghost and I'm still figuring out how to touch the keyboard." }
+];
+
+let lastExcuse = "";
+
+window.updateStrictLabel = (val) => {
+    const labels = ["Chill", "Annoyed", "Strict", "Final Boss", "The Dean"];
+    document.getElementById('strictVal').innerText = labels[val - 1];
+>>>>>>> 236e0aa (changes made)
 };
 
-// Overthinker
-let otTimer;
+window.brewExcuse = () => {
+    const sit = document.getElementById('exSituation').value;
+    const level = parseInt(document.getElementById('exStrict').value);
+    
+    if(!sit) { alert("Please enter your situation first!"); return; }
+
+    document.getElementById('exInputArea').style.display = 'none';
+    document.getElementById('exCooking').style.display = 'block';
+    document.getElementById('exResultContainer').style.display = 'none';
+
+    setTimeout(() => {
+        const filtered = excusesPool.filter(e => e.level === level);
+        let excuse = filtered[Math.floor(Math.random() * filtered.length)].text;
+        
+        // Prevent immediate repeat
+        if (excuse === lastExcuse) {
+            excuse = filtered[(filtered.indexOf(excuse) + 1) % filtered.length].text;
+        }
+        lastExcuse = excuse;
+
+        const fullExcuse = `Regarding the situation where "${sit}", I am truly sorry but ${excuse}`;
+        
+        document.getElementById('exCooking').style.display = 'none';
+        document.getElementById('exResultContainer').style.display = 'block';
+        document.getElementById('exResult').innerText = fullExcuse;
+        
+        // Show Stamp with delay
+        setTimeout(() => {
+            document.getElementById('exStamp').style.display = 'block';
+        }, 300);
+    }, 1500);
+};
+
+window.copyExcuse = () => {
+    const text = document.getElementById('exResult').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const oldText = btn.innerText;
+        btn.innerText = "COPIED! ✅";
+        setTimeout(() => btn.innerText = oldText, 2000);
+    });
+};
+
+window.resetExcuse = () => {
+    document.getElementById('exInputArea').style.display = 'block';
+    document.getElementById('exResultContainer').style.display = 'none';
+    document.getElementById('exStamp').style.display = 'none';
+    document.getElementById('exSituation').value = '';
+};
+
+// Overthinker 3000
+let otActive = false;
 window.startOverthink = () => {
-    const list = document.getElementById('otList');
-    const cont = document.getElementById('otContainer');
-    list.innerHTML = '';
-    let count = 1;
-    clearInterval(otTimer);
+    if (otActive) return;
+    const input = document.getElementById('otInput').value;
+    if (!input) { alert("Type something to overthink about!"); return; }
 
-    function loop() {
-        if(count > 10) return;
-        list.innerHTML += `<div class="ot-item">${count}. Everyone noticed and they hate you.</div>`;
-        document.body.style.transform = `scale(${1 + (count*0.02)})`;
-        cont.style.animation = `shakeOT ${0.5/count}s infinite`;
-        count++;
-        otTimer = setTimeout(loop, 1200);
-    }
-    loop();
+    otActive = true;
+    document.getElementById('otInputArea').style.display = 'none';
+    document.getElementById('otLoading').style.display = 'block';
+    document.getElementById('otResults').style.display = 'none';
+
+    // 2-second loading drama
+    setTimeout(() => {
+        document.getElementById('otLoading').style.display = 'none';
+        document.getElementById('otResults').style.display = 'block';
+        const list = document.getElementById('otList');
+        list.innerHTML = '';
+        list.classList.add('heartbeat');
+        
+        const scenarios = generateScenarios(input);
+        revealScenarios(scenarios, 0);
+    }, 2000);
 };
-function resetOT() {
-    clearInterval(otTimer);
-    document.body.style.transform = 'scale(1)';
-    document.getElementById('otContainer').style.animation = '';
+
+function generateScenarios(input) {
+    const templates = [
+        `Maybe they just didn't hear you mention "${input}".`,
+        `Actually, they heard it and it sounded a bit awkward.`,
+        `They're definitely discussing how weird "${input}" was in a group chat right now.`,
+        `Wait, did you have something on your face while you said "${input}"?`,
+        `They think you've been practicing "${input}" in the mirror for hours.`,
+        `Someone recorded you saying "${input}" and it's about to go viral for the wrong reasons.`,
+        `Your crush just saw the viral clip and is blocking you.`,
+        `Your future employer found the clip and revoked your offer.`,
+        `The entire internet is now making memes about you and "${input}".`,
+        `Conclusion: You must change your name, burn your passport, and live in a cave forever.`
+    ];
+    return templates;
 }
+<<<<<<< HEAD
+=======
+
+function revealScenarios(scenarios, index) {
+    if (index >= scenarios.length) {
+        otActive = false;
+        return;
+    }
+
+    const list = document.getElementById('otList');
+    const item = document.createElement('div');
+    item.className = 'ot-item';
+    
+    const chaosLevel = index + 1;
+    const tag = document.createElement('span');
+    tag.className = `chaos-tag chaos-${chaosLevel}`;
+    tag.innerText = `Level ${chaosLevel}: ${getChaosLabel(chaosLevel)}`;
+    
+    const textSpan = document.createElement('span');
+    textSpan.className = 'typewriter-text';
+    
+    item.appendChild(tag);
+    item.appendChild(textSpan);
+    list.appendChild(item);
+    list.scrollTop = list.scrollHeight;
+
+    let charIndex = 0;
+    const text = scenarios[index];
+    
+    function type() {
+        if (charIndex < text.length) {
+            textSpan.innerHTML += text.charAt(charIndex);
+            charIndex++;
+            setTimeout(type, 30);
+        } else {
+            // Wait a bit before next scenario
+            setTimeout(() => revealScenarios(scenarios, index + 1), 600);
+        }
+    }
+    type();
+}
+
+function getChaosLabel(level) {
+    const labels = ["Mild Panic", "Sweaty Palms", "Rapid Heartbeat", "Sudden Regret", "Social Suicide", "Existential Dread", "Pure Paranoia", "Total Meltdown", "Absolute Doom", "GAME OVER"];
+    return labels[level - 1];
+}
+
+window.resetOT = () => {
+    otActive = false;
+    document.getElementById('otInputArea').style.display = 'block';
+    document.getElementById('otLoading').style.display = 'none';
+    document.getElementById('otResults').style.display = 'none';
+    document.getElementById('otList').innerHTML = '';
+    document.getElementById('otInput').value = '';
+    document.getElementById('otList').classList.remove('heartbeat');
+};
+
+// Camera
+function startCam() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({video:true}).then(s => {
+            document.getElementById('myVid').srcObject = s;
+        }).catch(e => console.log("Camera failed"));
+    }
+}
+>>>>>>> 236e0aa (changes made)
