@@ -46,8 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = "Name already taken! Be more original.";
             } else {
                 $hashed = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("INSERT INTO users (username, email, password, avatar_type, year) VALUES (?, ?, ?, ?, ?)");
-                if ($stmt->execute([$username, $email, $hashed, $avatar, $year])) {
+                $stmt = $pdo->prepare("INSERT INTO users (username, password, avatar_type, year) VALUES (?, ?, ?, ?)");
+                if ($stmt->execute([$username, $hashed, $avatar, $year])) {
                     $_SESSION['user_id'] = $pdo->lastInsertId();
                     $_SESSION['username'] = $username;
                     header("Location: dashboard.php");

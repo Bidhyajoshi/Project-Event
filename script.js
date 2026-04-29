@@ -569,12 +569,111 @@ window.resetBunk = () => {
     document.getElementById('bunkStep1').style.display = 'flex';
 };
 
+// Savage AI Logic Dictionary
+const savageRoasts = {
+    "Exams/Study": [
+        "You’re studying? Even the book is surprised.",
+        "Your GPA called, it’s currently in the ICU.",
+        "Studying now is like putting a band-aid on a bullet wound.",
+        "I've seen more potential in an unplugged toaster.",
+        "Your brain cells are currently on an unpaid leave.",
+        "The only thing you'll pass is out from stress.",
+        "Are you reading the textbook or just waiting for the movie adaptation?"
+    ],
+    "Crush/Love": [
+        "Your crush saw your message and decided to stay single forever.",
+        "You have a better chance of flying than getting a text back.",
+        "Their 'seen' is a polite way of saying 'never again'.",
+        "You're not in the friendzone, you're in the 'who are you' zone.",
+        "They took 3 days to reply, and you answered in 3 seconds. Have some shame.",
+        "Your love life is as dry as college canteen food.",
+        "They are typing... a restraining order."
+    ],
+    "Money/Broke": [
+        "Your bank balance is just a notification that you need to go back to sleep.",
+        "You’re so broke, even 'free' is too expensive for you.",
+        "Your wallet has more dust than cash.",
+        "You couldn't even afford to pay attention right now.",
+        "Your net worth is basically an apology letter.",
+        "You check your bank app just to see the loading screen.",
+        "If crying paid, you'd be Elon Musk by now."
+    ],
+    "Default": [
+        "I'd agree with you, but then we'd both be wrong.",
+        "You bring everyone a lot of joy... when you leave the room.",
+        "Your secrets are safe with me. I wasn't even listening.",
+        "You sound reasonable. Time to up my medication.",
+        "I'm not insulting you, I'm describing you.",
+        "Keep rolling your eyes, maybe you'll find a brain back there.",
+        "You're like a cloud. When you disappear, it's a beautiful day.",
+        "I'm not a nerd, I'm just smarter than you.",
+        "Did you fall from heaven? Because so did Satan.",
+        "You are the human equivalent of a participation trophy.",
+        "You are more disappointing than an unsalted pretzel.",
+        "I'd explain it to you, but I left my crayons at home.",
+        "I’m jealous of people that don’t know you.",
+        "You’re proof that evolution can go in reverse.",
+        "I thought of you today. It reminded me to take out the trash.",
+        "You're a gray sprinkle on a rainbow cupcake.",
+        "If ignorance is bliss, you must be the happiest person on earth.",
+        "You are the reason shampoo has instructions.",
+        "I’m trying my absolute hardest to see things from your perspective, but I can't get my head that far up my own ass.",
+        "Some babies were dropped on their heads but you were clearly thrown at a wall.",
+        "Your family tree must be a cactus because everybody on it is a prick.",
+        "You’re so annoying, you could make a Happy Meal cry.",
+        "If I had a face like yours, I'd sue my parents.",
+        "You look like a before picture.",
+        "I'd love to roast you, but my mom told me not to burn trash.",
+        "You're about as useful as a screen door on a submarine.",
+        "It's scary to think that people like you are allowed to vote.",
+        "You're the reason they put 'Do Not Drink' on bleach bottles.",
+        "You are not the dumbest person in the world, but you better hope they don't die.",
+        "You are a pizza edge. Everybody leaves you behind."
+    ]
+};
+
+let recentRoasts = [];
+
+function getSavageReply(input) {
+    let category = "Default";
+    input = input.toLowerCase();
+    
+    // Keyword Matching
+    if (input.includes('exam') || input.includes('study') || input.includes('gpa') || input.includes('marks') || input.includes('test') || input.includes('fail') || input.includes('book')) {
+        category = "Exams/Study";
+    } else if (input.includes('crush') || input.includes('love') || input.includes('text') || input.includes('reply') || input.includes('date') || input.includes('single') || input.includes('gf') || input.includes('bf') || input.includes('relationship')) {
+        category = "Crush/Love";
+    } else if (input.includes('money') || input.includes('broke') || input.includes('poor') || input.includes('bank') || input.includes('rich') || input.includes('wallet') || input.includes('buy')) {
+        category = "Money/Broke";
+    }
+    
+    let pool = savageRoasts[category];
+    
+    // Shuffler Mechanism
+    let availableRoasts = pool.filter(r => !recentRoasts.includes(r));
+    if (availableRoasts.length === 0) {
+        availableRoasts = pool; // Reset if all used
+        recentRoasts = [];
+    }
+    
+    const selectedRoast = availableRoasts[Math.floor(Math.random() * availableRoasts.length)];
+    
+    recentRoasts.push(selectedRoast);
+    if (recentRoasts.length > 5) recentRoasts.shift();
+    
+    return selectedRoast;
+}
+
 // Savage AI State
 let burnLevel = 0;
 window.sendAIMsg = () => {
     const box = document.getElementById('aiChatBox');
     const inputField = document.getElementById('aiInput');
     const portal = document.getElementById('ai-portal');
+    const burnContainer = document.querySelector('.burn-meter-section');
+    const burnFill = document.getElementById('burnFill');
+    const heatLevelText = document.getElementById('heatLevelText');
+    const burnText = document.getElementById('burnText');
     
     const val = inputField.value;
     const modeNode = document.querySelector('input[name="aiMode"]:checked');
@@ -582,66 +681,92 @@ window.sendAIMsg = () => {
 
     if(!val) return;
 
-    // Screen Shake on Send
-    document.body.classList.add('violent-shake');
-    setTimeout(() => document.body.classList.remove('violent-shake'), 300);
-
     // User Message
     box.innerHTML += `<div class="msg user">${val}</div>`;
     inputField.value = '';
     scrollToBottomAI();
 
-    // Fetch AI Roast
-    fetch('savage_ai.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `input=${encodeURIComponent(val)}&mode=${mode}`
-    }).then(r => r.json()).then(data => {
+    // Thinking State
+    const thinkingId = 'thinking-' + Date.now();
+    box.innerHTML += `<div id="${thinkingId}" class="msg ai" style="opacity:0.7; font-style:italic;">Generating Emotional Damage...</div>`;
+    scrollToBottomAI();
+    
+    // Disable input while thinking
+    inputField.disabled = true;
+
+    // Simulate AI delay
+    setTimeout(() => {
+        // Remove thinking message
+        const thinkingMsg = document.getElementById(thinkingId);
+        if(thinkingMsg) thinkingMsg.remove();
+        
+        // Re-enable input
+        inputField.disabled = false;
+        inputField.focus();
+
+        const reply = getSavageReply(val);
+
+        // Neon Flash & Glitch UI effect
+        portal.classList.add('screen-flash');
+        setTimeout(() => portal.classList.remove('screen-flash'), 100);
+        
+        // Add AI Message with Glitch animation
+        const aiMsgHtml = `<div class="msg ai glitch-shake">${reply}</div>`;
+        box.innerHTML += aiMsgHtml;
+        scrollToBottomAI();
+        
         setTimeout(() => {
-            // Neon Flash & Glitch
-            portal.classList.add('screen-flash');
-            setTimeout(() => portal.classList.remove('screen-flash'), 100);
-            
-            // Add AI Message with Glitch animation
-            const aiMsgHtml = `<div class="msg ai glitch-shake">${data.reply}</div>`;
-            box.innerHTML += aiMsgHtml;
-            scrollToBottomAI();
-            setTimeout(() => {
-                const msgs = document.querySelectorAll('.glitch-shake');
-                msgs.forEach(m => m.classList.remove('glitch-shake'));
-            }, 600); // Stop glitching after 600ms
+            const msgs = document.querySelectorAll('.glitch-shake');
+            msgs.forEach(m => m.classList.remove('glitch-shake'));
+        }, 600); // Stop glitching after 600ms
 
-            // Speech Synthesis
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(data.reply);
-                utterance.rate = 1.1;
-                utterance.pitch = data.mode === 'damage' ? 0.5 : 1.2;
-                window.speechSynthesis.speak(utterance);
+        // Speech Synthesis
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(reply);
+            utterance.rate = 1.1;
+            utterance.pitch = mode === 'damage' ? 0.5 : 1.2;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Burn Meter Logic
+        burnLevel += 25;
+        if(burnLevel > 100) burnLevel = 100;
+        
+        // Physical Shake
+        burnContainer.classList.add('violent-shake');
+        setTimeout(() => burnContainer.classList.remove('violent-shake'), 400);
+        
+        // Update Fill and Color
+        burnFill.style.height = `${burnLevel}%`;
+        burnFill.style.background = '#ff0040'; // Neon red
+        burnFill.style.boxShadow = '0 0 20px #ff0040, inset 0 0 10px #ff0040';
+        
+        burnText.innerText = `${burnLevel}% Roast`;
+        burnText.setAttribute('data-text', `${burnLevel}% Roast`);
+        
+        // Update Heat Level Text
+        if(heatLevelText) {
+            if(burnLevel <= 33) {
+                heatLevelText.innerText = "Mildly Toasted";
+            } else if(burnLevel <= 66) {
+                heatLevelText.innerText = "Third Degree Burn";
+            } else {
+                heatLevelText.innerText = "Absolute Ashes";
             }
+        }
 
-            // Burn Meter Logic
-            if(data.mode === 'savage' || data.mode === 'damage') {
-                burnLevel += 25;
-                if(burnLevel > 100) burnLevel = 100;
-                document.getElementById('burnFill').style.height = `${burnLevel}%`;
-                const textEl = document.getElementById('burnText');
-                textEl.innerText = `${burnLevel}% Roast`;
-                textEl.setAttribute('data-text', `${burnLevel}% Roast`);
-            }
+        // Meme Pop-up Randomly (30% chance)
+        if(Math.random() < 0.3) {
+            const meme = document.getElementById('memeSticker');
+            meme.innerHTML = mode === 'damage' ? "💀 DESTROYED" : "🔥 SAVAGE";
+            meme.style.display = 'block';
+            setTimeout(() => { meme.style.display = 'none'; }, 2000);
+        }
 
-            // Meme Pop-up Randomly (30% chance)
-            if(Math.random() < 0.3) {
-                const meme = document.getElementById('memeSticker');
-                meme.innerHTML = data.mode === 'damage' ? "💀 DESTROYED" : "🔥 SAVAGE";
-                meme.style.display = 'block';
-                setTimeout(() => { meme.style.display = 'none'; }, 2000);
-            }
+        // Spawn Particles
+        spawnSkulls();
 
-            // Spawn Particles
-            spawnSkulls();
-
-        }, 600);
-    }).catch(e => console.error(e));
+    }, 1200); // 1.2 seconds of emotional damage generation
 };
 
 function scrollToBottomAI() {
@@ -668,157 +793,25 @@ function fetchAIChatHistory() {
 }
 
 window.clearAIChat = () => {
+    // Always reset UI immediately
+    document.getElementById('aiChatBox').innerHTML = '';
+    burnLevel = 0;
+    document.getElementById('burnFill').style.height = '0%';
+    const textEl = document.getElementById('burnText');
+    if(textEl) { textEl.innerText = '0% Roast'; textEl.setAttribute('data-text', '0% Roast'); }
+    const heatEl = document.getElementById('heatLevelText');
+    if(heatEl) heatEl.innerText = 'Mildly Toasted';
+    // Also try to clear server-side history
     fetch('savage_ai.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'action=clear'
-    }).then(r => r.json()).then(data => {
-        document.getElementById('aiChatBox').innerHTML = '';
-        burnLevel = 0;
-        document.getElementById('burnFill').style.height = `0%`;
-        const textEl = document.getElementById('burnText');
-        textEl.innerText = `0% Roast`;
-        textEl.setAttribute('data-text', `0% Roast`);
-    }).catch(e => console.error(e));
+    }).catch(() => {});
 };
 
 function spawnSkulls() {
- // Overthinker 3000 Scenarios
-const otScenarios = {
-    "k": [
-        "That 'K.' has more attitude than a Bollywood villain.",
-        "They spent 2 minutes typing 'K.'? Something is wrong.",
-        "A full stop after K is a digital slap.",
-        "K means 'Kill me now, I am bored of you.'",
-        "They are definitely talking about you in another group.",
-        "That full stop means they hate you now.",
-        "They only replied to end the conversation.",
-        "They are typing a breakup message right now.",
-        "They are literally rolling their eyes at your text.",
-        "You've been officially friend-zoned by a single letter.",
-        "They are with someone else and just sent a quick K.",
-        "K is just a polite way of saying 'Shut up.'",
-        "They are laughing at your long paragraph.",
-        "They just screenshotted your text to roast you.",
-        "That K was typed with pure anger."
-    ],
-    "seen": [
-        "Read at 10:30 PM. It's 10:31 PM. You are dead to them.",
-        "They saw it and decided a wall was more interesting.",
-        "They are waiting for someone 'better' to reply first.",
-        "They showed your text to their friends and they all laughed.",
-        "They are drafting a roast but decided you aren't worth the effort.",
-        "They are busy living a life that doesn't include you.",
-        "The blue ticks are a sign of your impending doom.",
-        "They have muted your chat forever.",
-        "They are active on Instagram but ignored your text.",
-        "They deleted the chat after reading it.",
-        "They are thinking of ways to block you without feeling guilty.",
-        "You are just another notification they want to swipe away.",
-        "They are currently texting 5 other people.",
-        "They read it and said 'Ugh, not this person again.'",
-        "They are literally ghosting you in real-time."
-    ],
-    "busy": [
-        "Busy? They are watching Netflix and ignoring you.",
-        "Busy means 'Busy talking to someone else.'",
-        "They have time for everyone except you.",
-        "Busy is code for 'I don't want to talk, go away.'",
-        "They are currently out with friends and laughing at your text.",
-        "They will reply in 3 business days... maybe.",
-        "They are intentionally making you wait to show dominance.",
-        "They are busy... finding a replacement for you.",
-        "Busy with 'important stuff' (scrolling Reels).",
-        "They are just not that into you.",
-        "They have time to post stories but not to reply.",
-        "You are at the bottom of their priority list.",
-        "They are pretending to be busy to avoid a long chat.",
-        "They are literally waiting for you to stop texting."
-    ],
-    "late": [
-        "Late? They are already there with someone else.",
-        "They forgot you existed until 5 minutes ago.",
-        "They are making an excuse while typing 'On my way.'",
-        "They are actually just waking up now.",
-        "They don't respect your time because they don't respect you.",
-        "They are dreading meeting you.",
-        "They are hoping you'll cancel so they can stay home.",
-        "They are intentionally late to look 'cool.'",
-        "They are with their ex and lost track of time.",
-        "They are already thinking of how to leave early."
-    ],
-    "ok": [
-        "Ok is the silent killer of conversations.",
-        "Ok means 'I am not listening, but I have to reply.'",
-        "They are clearly annoyed but being 'polite.'",
-        "Ok is the shortest path to a breakup.",
-        "They are bored to death by your existence.",
-        "They are checking their watch while typing Ok.",
-        "Ok was sent with a heavy sigh.",
-        "They are wondering why they ever replied to you.",
-        "Ok is just a placeholder for 'Get lost.'",
-        "They are already talking to someone more interesting."
-    ],
-    "generic": [
-        "They took 5 seconds longer to reply. PANIC!",
-        "They didn't use an emoji. The end is near.",
-        "They used a different font in their head while reading your text.",
-        "They are definitely judging your grammar.",
-        "They are showing this to their mom right now.",
-        "They are planning to ghost you by Friday.",
-        "They are literally cringing at your last text.",
-        "They are wondering how to tell you to stop texting.",
-        "They have a secret group chat about your weird habits.",
-        "They are comparing you to their ex right now.",
-        "They think you are 'too much' to handle.",
-        "They are only talking to you because they are bored.",
-        "They are already planning their next move without you.",
-        "You are just a side character in their story.",
-        "They are going to leave you on 'Delivered' for 2 days."
-    ]
-};
-
-window.startPanicAttack = () => {
-    const input = document.getElementById('otInput').value.toLowerCase();
-    const list = document.getElementById('otList');
-    const container = document.getElementById('otContainer');
-    list.innerHTML = '';
-    
-    let category = "generic";
-    if (input.includes('k') || input === 'k') category = "k";
-    else if (input.includes('seen') || input.includes('read')) category = "seen";
-    else if (input.includes('busy')) category = "busy";
-    else if (input.includes('late')) category = "late";
-    else if (input.includes('ok')) category = "ok";
-
-    const pool = otScenarios[category];
-    const genericPool = otScenarios["generic"];
-    const fullPool = [...pool, ...genericPool];
-    
-    // Heartbeat Pulse Effect
-    container.style.animation = "heartbeat-red 0.5s infinite";
-    
-    let count = 0;
-    const interval = setInterval(() => {
-        if (count >= 10) {
-            clearInterval(interval);
-            return;
-        }
-        
-        const randomScenario = fullPool[Math.floor(Math.random() * fullPool.length)];
-        const el = document.createElement('div');
-        el.className = 'ot-item';
-        el.style.cssText = "background:rgba(255,0,0,0.2); border-left:5px solid #ff0000; padding:15px; color:#fff; font-family:'Courier New', Courier, monospace; font-weight:bold; font-size:1.1rem; animation:shake 0.2s infinite, slideInRight 0.3s forwards; text-shadow:2px 2px #000; text-transform:uppercase;";
-        el.innerText = `[PANIC] ${randomScenario}`;
-        
-        list.prepend(el);
-        count++;
-        
-        // Auto scroll to top
-        list.scrollTop = 0;
-    }, 800);
-}; 
     const container = document.getElementById('aiParticles');
+    if (!container) return;
     for(let i=0; i<4; i++) {
         let el = document.createElement('div');
         el.className = 'f-skull';
@@ -828,6 +821,111 @@ window.startPanicAttack = () => {
         setTimeout(() => el.remove(), 4000);
     }
 }
+
+// Overthinker 3000 Logic
+
+const otEscalationPool = {
+    social: [
+        "They definitely screenshotted your message and sent it to the 'real' group chat.",
+        "That 'seen' wasn't an accident. They are currently voting on how to ignore you.",
+        "Everyone in the room just went quiet because you walked in. They were definitely talking about you.",
+        "Your crush just added a story specifically to show you how much fun they're having without you.",
+        "That joke you made 3 years ago? Yeah, they still think about how awkward it was.",
+        "You're not the main character, you're the comic relief that isn't funny."
+    ],
+    life: [
+        "Your future employer just saw your search history. You're never getting a job.",
+        "That one mistake you made in 10th grade is officially on your permanent record now.",
+        "Your parents are currently having a meeting about how you were a mistake.",
+        "The person you like is currently laughing at your 'profile picture' with their ex.",
+        "You just sent a text to the wrong person. It's too late to delete it.",
+        "You'll never be successful because you spent 3 hours overthinking this one text."
+    ],
+    cosmic: [
+        "Your cringe level just created a localized black hole. The universe is collapsing.",
+        "Aliens decided not to visit Earth specifically because of your last Instagram story.",
+        "The simulation just glitched because your anxiety levels broke the server.",
+        "You are the reason entropy is accelerating. You're literally killing the universe.",
+        "God just took a screenshot of your life to show the angels 'what not to do'.",
+        "Your existence is the punchline of a cosmic joke you'll never understand."
+    ]
+};
+
+window.startEscalatingPanic = function(input) {
+    const list = document.getElementById('otList');
+    list.innerHTML = '';
+
+    const prefixes = ["What if...", "Suddenly...", "In 5 minutes...", "By next year...", "Actually...", "Plot twist:", "Worst part is...", "Basically...", "Deep down...", "FACT:"];
+    let scenarios = [];
+
+    for (let i = 1; i <= 10; i++) {
+        let pool;
+        if (i <= 3) pool = otEscalationPool.social;
+        else if (i <= 7) pool = otEscalationPool.life;
+        else pool = otEscalationPool.cosmic;
+
+        const base = pool[Math.floor(Math.random() * pool.length)];
+        const lvlColors = ['#00ff88','#00ff88','#aaff00','#aaff00','#ffcc00','#ffcc00','#ff8800','#ff4400','#ff0000','#ff0000'];
+        scenarios.push({ text: `${prefixes[i-1]} ${base}`, lvl: i, color: lvlColors[i-1] });
+    }
+
+    let currentIdx = 0;
+    function processNext() {
+        if (currentIdx >= scenarios.length) return;
+        const scenario = scenarios[currentIdx];
+        const item = document.createElement('div');
+        item.style.cssText = `
+            background: rgba(255,0,80,0.08);
+            border-left: 4px solid ${scenario.color};
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: slideInRight 0.3s ease;
+        `;
+        const badge = document.createElement('span');
+        badge.style.cssText = `
+            background: ${scenario.color};
+            color: #000;
+            font-family: 'Fredoka One', cursive;
+            font-size: 0.85rem;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-top: 2px;
+        `;
+        badge.textContent = `LVL ${scenario.lvl}`;
+        const textEl = document.createElement('span');
+        textEl.style.cssText = 'color:#fff; font-size:1.05rem; line-height:1.5; text-align:left;';
+        item.appendChild(badge);
+        item.appendChild(textEl);
+        list.appendChild(item);
+        list.scrollTop = list.scrollHeight;
+
+        window.typewriterEffect(textEl, scenario.text, 18, function() {
+            currentIdx++;
+            setTimeout(processNext, 350);
+        });
+    }
+    processNext();
+};
+
+window.typewriterEffect = function(element, text, speed, callback) {
+    let i = 0;
+    function type() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        } else if (callback) {
+            callback();
+        }
+    }
+    type();
+};
 
 // Excuse Generator
 window.brewExcuse = () => {
@@ -860,100 +958,6 @@ window.resetExcuse = () => {
 };
 
 // Overthinker 3000
-let otActive = false;
-window.startOverthink = () => {
-    if (otActive) return;
-    const input = document.getElementById('otInput').value;
-    if (!input) { alert("Type something to overthink about!"); return; }
-
-    otActive = true;
-    
-    // Add loading indicator if missing
-    if(!document.getElementById('otLoading')) {
-        const loadingHtml = `<div id="otLoading" style="display:none; font-size:2rem; text-align:center; padding:20px; color:#ff00ff; animation: pulse 1s infinite;">Simulating Anxiety...</div>`;
-        document.getElementById('otList').insertAdjacentHTML('beforebegin', loadingHtml);
-    }
-    
-    document.getElementById('otInput').style.display = 'none';
-    const btn = document.querySelector('#overthink-portal .glow-btn');
-    if(btn) btn.style.display = 'none';
-    
-    document.getElementById('otLoading').style.display = 'block';
-    if(document.getElementById('otResults')) document.getElementById('otResults').style.display = 'none';
-
-    // 2-second loading drama
-    setTimeout(() => {
-        document.getElementById('otLoading').style.display = 'none';
-        if(document.getElementById('otResults')) document.getElementById('otResults').style.display = 'block';
-        const list = document.getElementById('otList');
-        list.innerHTML = '';
-        list.classList.add('heartbeat');
-        
-        const scenarios = generateScenarios(input);
-        revealScenarios(scenarios, 0);
-    }, 2000);
-};
-
-function generateScenarios(input) {
-    const templates = [
-        `Maybe they just didn't hear you mention "${input}".`,
-        `Actually, they heard it and it sounded a bit awkward.`,
-        `They're definitely discussing how weird "${input}" was in a group chat right now.`,
-        `Wait, did you have something on your face while you said "${input}"?`,
-        `They think you've been practicing "${input}" in the mirror for hours.`,
-        `Someone recorded you saying "${input}" and it's about to go viral for the wrong reasons.`,
-        `Your crush just saw the viral clip and is blocking you.`,
-        `Your future employer found the clip and revoked your offer.`,
-        `The entire internet is now making memes about you and "${input}".`,
-        `Conclusion: You must change your name, burn your passport, and live in a cave forever.`
-    ];
-    return templates;
-}
-
-function revealScenarios(scenarios, index) {
-    if (index >= scenarios.length) {
-        otActive = false;
-        return;
-    }
-
-    const list = document.getElementById('otList');
-    const item = document.createElement('div');
-    item.className = 'ot-item';
-    
-    const chaosLevel = index + 1;
-    const tag = document.createElement('span');
-    tag.className = `chaos-tag chaos-${chaosLevel}`;
-    tag.innerText = `Level ${chaosLevel}: ${getChaosLabel(chaosLevel)}`;
-    
-    const textSpan = document.createElement('span');
-    textSpan.className = 'typewriter-text';
-    
-    item.appendChild(tag);
-    item.appendChild(textSpan);
-    list.appendChild(item);
-    list.scrollTop = list.scrollHeight;
-
-    let charIndex = 0;
-    const text = scenarios[index];
-    
-    function type() {
-        if (charIndex < text.length) {
-            textSpan.innerHTML += text.charAt(charIndex);
-            charIndex++;
-            setTimeout(type, 30);
-        } else {
-            // Wait a bit before next scenario
-            setTimeout(() => revealScenarios(scenarios, index + 1), 600);
-        }
-    }
-    type();
-}
-
-function getChaosLabel(level) {
-    const labels = ["Mild Panic", "Sweaty Palms", "Rapid Heartbeat", "Sudden Regret", "Social Suicide", "Existential Dread", "Pure Paranoia", "Total Meltdown", "Absolute Doom", "GAME OVER"];
-    return labels[level - 1];
-}
-
 window.resetOT = () => {
     otActive = false;
     document.getElementById('otInput').style.display = 'block';
@@ -1207,25 +1211,21 @@ const excuseDB = {
             Confused: ["Wait, you were born?", "I thought your birthday was in leap year.", "Am I not your gift?", "I thought we agreed to skip this year.", "What is a birthday, really? Just a construct."]
         }
     },
-    // Adding fallbacks for other targets
-    HOD: { Late: null, Assignment: null, Bunked: null, ForgotBirthday: null },
-    Parents: { Late: null, Assignment: null, Bunked: null, ForgotBirthday: null },
-    Crush: { Late: null, Assignment: null, Bunked: null, ForgotBirthday: null },
-    Boss: { Late: null, Assignment: null, Bunked: null, ForgotBirthday: null }
+    HOD: {}, Parents: {}, Crush: {}, Boss: {}
 };
 
 // Fill out the missing combinations with generic but tailored ones if needed, 
 // for brevity we just fallback to Professor for missing specific logic, but with slight tweaks.
 function getExcuseText(target, situation, vibe) {
     // If specific logic doesn't exist for a target, default to Professor array but replace some words if needed
-    let pool = excuseDB[target]?.[situation]?.[vibe] || excuseDB['Professor'][situation][vibe];
+    // Prefer the richer inline engine
+    if(typeof getCreativeExcuse === 'function') return getCreativeExcuse(target, situation, vibe);
+    let pool = (excuseDB[target]?.[situation]?.[vibe]) || (excuseDB['Professor']?.[situation]?.[vibe]) || ['No excuse found. Just apologise.'];
     let excuse = pool[Math.floor(Math.random() * pool.length)];
-    
     if(target === 'Boss') excuse = excuse.replace('lecture', 'meeting').replace('class', 'shift').replace('tuition', 'salary').replace('syllabus', 'company goals');
     if(target === 'Parents') excuse = excuse.replace('tuition', 'allowance').replace('Professor', 'Mom/Dad').replace('assignment', 'chores');
     if(target === 'Crush') excuse = excuse.replace('assignment', 'text back').replace('lecture', 'date').replace('class', 'our hangout');
     if(target === 'HOD') excuse = excuse.replace('Professor', 'HOD').replace('class', 'department meeting');
-    
     return excuse;
 }
 
@@ -1233,32 +1233,35 @@ window.brewExcuse = () => {
     const target = document.getElementById('exTarget').value;
     const situation = document.getElementById('exSituation').value;
     const vibe = document.getElementById('exVibe').value;
-
-    if (!target || !situation || !vibe) {
-        alert("Select all ingredients to brew the lie!");
-        return;
-    }
-
+    if (!target || !situation || !vibe) { alert('🍲 Select ALL 3 ingredients before brewing the lie!'); return; }
     document.getElementById('exInputView').style.display = 'none';
     document.getElementById('exBrewingView').style.display = 'flex';
-
+    document.getElementById('exResultView').style.display = 'none';
+    if(typeof playVineBoom === 'function') playVineBoom();
     setTimeout(() => {
         const finalExcuse = getExcuseText(target, situation, vibe);
         document.getElementById('exResultText').innerText = finalExcuse;
-        
         document.getElementById('exBrewingView').style.display = 'none';
         document.getElementById('exResultView').style.display = 'flex';
-    }, 2500); // 2.5s brewing
+        if(typeof playAirhorn === 'function') setTimeout(playAirhorn, 200);
+    }, 2500);
 };
 
 window.copyExcuse = () => {
     const text = document.getElementById('exResultText').innerText;
     navigator.clipboard.writeText(text).then(() => {
-        alert("Copied to clipboard! Go save your life on WhatsApp.");
+        alert('✅ Copied! Go paste it on WhatsApp before you lose your nerve 😂');
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        alert('✅ Copied the lie! Deploy wisely.');
     });
 };
 
 window.resetExcuse = () => {
     document.getElementById('exResultView').style.display = 'none';
+    document.getElementById('exBrewingView').style.display = 'none';
     document.getElementById('exInputView').style.display = 'flex';
+    ['exTarget','exSituation','exVibe'].forEach(id => { var el = document.getElementById(id); if(el) el.selectedIndex = 0; });
 };

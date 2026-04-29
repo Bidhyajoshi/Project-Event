@@ -24,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = "Username or Email already exists!";
         } else {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (username, email, password, avatar_type, year) VALUES (?, ?, ?, ?, ?)");
-            if ($stmt->execute([$username, $email, $hashedPassword, $avatar, $year])) {
+            $stmt = $pdo->prepare("INSERT INTO users (username, password, avatar_type, year) VALUES (?, ?, ?, ?)");
+            if ($stmt->execute([$username, $hashedPassword, $avatar, $year])) {
                 $_SESSION['user_id'] = $pdo->lastInsertId();
                 $_SESSION['username'] = $username;
                 header("Location: dashboard.php");
